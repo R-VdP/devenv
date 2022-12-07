@@ -5,13 +5,13 @@
       pre-commit-hooks.inputs.nixpkgs.follows = "nixpkgs";
       nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
       devenv.url = "github:cachix/devenv?dir=src/modules";
-    } // (if builtins.pathExists ./.devenv/devenv.json 
+    } // (if builtins.pathExists ./.devenv/devenv.json
          then (builtins.fromJSON (builtins.readFile ./.devenv/devenv.json)).inputs
          else {});
 
     outputs = { nixpkgs, ... }@inputs:
       let
-        pkgs = import nixpkgs { system = "${pkgs.system}"; };
+        pkgs = nixpkgs.legacyPackages.''${system};
         lib = pkgs.lib;
         devenv = if builtins.pathExists ./.devenv/devenv.json
           then builtins.fromJSON (builtins.readFile ./.devenv/devenv.json)
@@ -19,7 +19,7 @@
         toModule = path:
           if lib.hasPrefix "./" path
           then ./. + (builtins.substring 1 255 path) + "/devenv.nix"
-          else if lib.hasPrefix "../" path 
+          else if lib.hasPrefix "../" path
           then throw "devenv: ../ is not supported for imports"
           else let
             paths = lib.splitString "/" path;
